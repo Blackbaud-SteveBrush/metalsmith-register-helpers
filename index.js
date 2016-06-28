@@ -1,38 +1,48 @@
-var extend = require('extend')
-var fs = require('fs')
-var Handlebars = require('handlebars')
+(function () {
+    'use strict';
 
-module.exports = plugin
+    var extend,
+        fs,
+        Handlebars;
 
-function plugin (options) {
-  options = extend({
-    directory: 'helpers'
-  }, options || {})
+    extend = require('extend');
+    fs = require('fs');
+    Handlebars = require('handlebars');
 
-  return function (files, metalsmith, done) {
-    fs.readdir(metalsmith.path(options.directory), function (err, files) {
-      if (err) throw err
+    module.exports = function (options) {
+        options = extend({
+            directory: 'helpers'
+        }, options || {});
 
-      files.forEach(function (file) {
-        var helperContents,
-            path,
-            templateName;
+        return function (files, metalsmith, done) {
 
-          path = metalsmith.path(options.directory, file);
-          helperContents = require(path);
+            fs.readdir(metalsmith.path(options.directory), function (error, files) {
+                if (error) {
+                    throw error;
+                }
 
-          switch (typeof helperContents) {
-          case "function":
-            templateName = file.split('.').shift();
-            Handlebars.registerHelper(templateName, helperContents);
-            break;
-          case "object":
-            Handlebars.registerHelper(helperContents);
-            break;
-          }
-      })
+                files.forEach(function (file) {
+                    var helperContents,
+                        path,
+                        templateName;
 
-      done()
-    })
-  }
-}
+                    path = metalsmith.path(options.directory, file);
+                    helperContents = require(path);
+
+                    switch (typeof helperContents) {
+                    case 'function':
+                        templateName = file.split('.').shift();
+                        Handlebars.registerHelper(templateName, helperContents);
+                        break;
+                    case 'object':
+                        Handlebars.registerHelper(helperContents);
+                        break;
+                    }
+                });
+
+                done();
+            });
+        };
+    };
+
+}());
